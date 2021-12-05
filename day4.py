@@ -7,10 +7,10 @@ def CheckCardBingo(ks):
     n = len(ks[0])
     for k in ks:
         for row in k:
-            if sum(row) == -n:
+            if sum(row) == 0:
                 bingo.add(k)
         for i in range(n):
-            if sum([k[j][i] for j in range(n)]) == -n:
+            if sum([k[j][i] for j in range(n)]) == 0:
                 bingo.add(k)
     return bingo
 
@@ -36,7 +36,7 @@ with open("day4.txt", "r") as f:
             for card in cards:
                 for i in range(n):
                     if int(number) in card[i]:
-                        card[i][card[i].index(int(number))] = -1
+                        card[i][card[i].index(int(number))] = 0
             winner = CheckCardBingo(cards)
             if any(winner):
                 sol, = winner
@@ -50,7 +50,7 @@ with open("day4.txt", "r") as f:
                 for card in cards:
                     for i in range(n):
                         if int(number) in card[i]:
-                            card[i][card[i].index(int(number))] = -1
+                            card[i][card[i].index(int(number))] = 0
                 winners = CheckCardBingo(cards)
                 if len(winners) + 1 >= N:
                     kards = set([tuple([tuple(e) for e in kard]) for kard in cards])
@@ -59,7 +59,7 @@ with open("day4.txt", "r") as f:
             else:
                 for k in lastwinner:
                     if int(number) in k:
-                        k[k.index(int(number))] = -1
+                        k[k.index(int(number))] = 0
                 winner = CheckCardBingo([lastwinner])
                 if any(winner):
                     sol, = winner
