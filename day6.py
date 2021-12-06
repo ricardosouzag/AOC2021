@@ -1,9 +1,6 @@
 def Day(fishes):
-    aux = list(range(9))
-    for i in range(1,9):
-        aux[i-1] = fishes[i]
+    aux = fishes[1:] + [fishes[0]]
     aux[6] += fishes[0]
-    aux[8] = fishes[0]
     return aux
 
 with open("day6.txt") as f:
