@@ -10,10 +10,6 @@ with open("day6.txt") as f:
     origfish = f.read().split(',')
     origfish = [int(fish) for fish in origfish]
     fishbuckets = [origfish.count(i) for i in range(9)]
-<<<<<<< HEAD
-=======
-    print(fishbuckets)
->>>>>>> origin/master
 
     feesh = fishbuckets
 
