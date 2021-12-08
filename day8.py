@@ -1,5 +1,4 @@
 import numpy as np
-import time
 
 
 letters = 'abcdefg'
@@ -24,8 +23,6 @@ def decode(sgnlist):
         out += [str(displayDict[newc])]
 
     return int(''.join(out))
-
-starttime = time.time()
 with open('day8.txt') as f:
     inp = f.read().splitlines()
     inplines = [k[0] + k[1] for k in [i.split('|') for i in inp]]
