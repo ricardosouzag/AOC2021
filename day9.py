@@ -1,13 +1,12 @@
-from itertools import product
-
 import numpy as np
 
 
 def varabs(num, base):
-    aux = base - num
-    if aux > 0:
-        return num
-    return num - 2
+    # if base is non-negative, returns the smallest non-negative number X such that abs(X-base) = abs(num-base)
+    # if base == 0 this is just abs(num)
+    # if base < 0 returns the smallest non-negative number X such that abs(X+base) = abs(num-base)
+    return abs(base-abs(base-num))
+
 
 
 def connect(points, visited):
@@ -33,24 +32,23 @@ with open('day9.txt') as f:
 
     for i in range(n):
         for j in range(m):
-            if inputs[i, j] < inputs[abs(i - 1), j] and inputs[i, j] < inputs[varabs(i + 1, n), j] and inputs[i, j] < \
-                    inputs[
-                        i, abs(j - 1)] and inputs[i, j] < inputs[i, varabs(j + 1, m)]:
+            if  inputs[i, j] < inputs[varabs(i - 1, 0), j]\
+            and inputs[i, j] < inputs[varabs(i + 1, n - 1), j]\
+            and inputs[i, j] < inputs[i, varabs(j - 1, 0)]\
+            and inputs[i, j] < inputs[i, varabs(j + 1, m - 1)]:
                 lows += [inputs[i, j]]
 
     ret = [l + 1 for l in lows]
     print('Parte 1:', sum(ret))
 
-    coords = [p for p in product(range(n), range(m))]
-    coordsmap = {p:inputs[p] for p in coords}
-
     basins = set()
-    for i, j in coords:
-        if inputs[i, j] == 9:
-            continue
-        if any([basin for basin in basins if (i, j) in basin]):
-            continue
-        basins.add(frozenset(connect({(i, j)}, set())))
+    for i in range(n):
+        for j in range(m):
+            if inputs[i, j] == 9:
+                continue
+            if any([basin for basin in basins if (i, j) in basin]):
+                continue
+            basins.add(frozenset(connect({(i, j)}, set())))
 
     basinslens = sorted([len(basin) for basin in basins])
     print('Parte 2:', np.prod(basinslens[-3:]))
