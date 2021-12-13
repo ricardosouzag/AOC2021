@@ -4,15 +4,17 @@ with open('day10.txt') as f:
 	size = len(lines)
 
 	opens = {
-		'{': 1197,
-		'[': 57,
-		'(': 3,
-		'<': 25137}
+		'{':1197,
+		'[':57,
+		'(':3,
+		'<':25137
+		}
 	closes = {
-		'}': 1197,
-		']': 57,
-		')': 3,
-		'>': 25137}
+		'}':1197,
+		']':57,
+		')':3,
+		'>':25137
+		}
 
 	glitches = []
 	glitchedLines = []
@@ -36,16 +38,19 @@ with open('day10.txt') as f:
 		'{':3,
 		'[':2,
 		'(':1,
-		'<':4}
+		'<':4
+		}
 	closes = {
 		'}':3,
 		']':2,
 		')':1,
-		'>':4}
+		'>':4
+		}
 
 	completions = []
 	for i in range(size):
-		if i in glitchedLines: continue
+		if i in glitchedLines:
+			continue
 		line = lines[i]
 		stack = []
 		for char in line:
@@ -65,4 +70,4 @@ with open('day10.txt') as f:
 
 	completionScores.sort()
 
-	print('Parte 2:', completionScores[int(len(completionScores)/2)])
+	print('Parte 2:', completionScores[int(len(completionScores) / 2)])
