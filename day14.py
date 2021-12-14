@@ -35,8 +35,8 @@ def GrowPolymer(steps):
 with open('day14.txt') as f:
 	raw = f.read().splitlines()
 	template = raw[0]
-	instructions = dict([int.split(' -> ') for int in raw[2:]])
-	letters = set(instructions.values())
+	instructions = dict([inst.split(' -> ') for inst in raw[2:]])
+	letters = set(instructions.values()) | set(template)
 
 	part1 = GrowPolymer(10)
 	print('Parte 1:', part1[-1] - part1[0])
