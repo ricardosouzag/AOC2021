@@ -1,9 +1,8 @@
 import copy
-import sympy
-import numpy as np
+from sympy import symbols, zeros, init_printing, pprint
 
-on, off = sympy.symbols('#,.')
-sympy.init_printing(wrap_line=False)
+on, off = symbols('#,.')
+init_printing(wrap_line=False)
 
 
 def DoFold(fold, map):
@@ -30,7 +29,7 @@ def ToMatrix(coords):
 	mx, Mx = min(xs), max(xs)
 	my, My = min(ys), max(ys)
 	n, m = Mx - mx + 1, My - my + 1
-	mat = sympy.zeros(n, m)
+	mat = zeros(n, m)
 	for i in range(n):
 		for j in range(m):
 			mat[i, j] = on if (i, j) in coords else off
@@ -49,4 +48,4 @@ with open('day13.txt') as f:
 		res = DoFold(inst, res)
 
 	print('Parte 2:')
-	sympy.pprint(ToMatrix(res))
+	pprint(ToMatrix(res))

@@ -8,41 +8,61 @@ def Neighbors(v):
 def FindPaths(state):
 	n = len(state)
 	past, present = list(state.keys()), list(state.values())
-	neighborList = [Neighbors(present[i]) - (set(past[i]) - bigcaves) for i in range(n)]
+	neighborList = [neighborsDict[present[i]] - (set(past[i]) - bigcaves) for i in range(n)]
 	if not any(neighborList):
 		return {e for e in state if state[e] == 'end'}
 	future = {}
 	for i in range(n):
 		if present[i] == 'end':
-			future.update({
-				              past[i]:present[i]})
+			future.update(
+					{
+						past[i]:present[i]
+						}
+					)
 		for neigh in neighborList[i]:
-			future.update({
-				              tuple(list(past[i]) + [neigh]):neigh})
+			future.update(
+					{
+						tuple(list(past[i]) + [neigh]):neigh
+						}
+					)
 	return FindPaths(future)
 
 
 def FindPaths2(state):
 	n = len(state)
-	past, present = list(state.keys()), list(state.values())
+	prev, present = list(state.keys()), list(state.values())
+	past, repeated = list(zip(*prev))
+	repeated = list(repeated)
+
 	if set(present) == {'end'}:
 		return state
+
 	future = {}
 	for i in range(n):
 		if present[i] == 'end':
-			future.update({
-				              past[i]:present[i]})
+			future.update(
+					{
+						prev[i]:present[i]
+						}
+					)
 			continue
-		visited = [k for k, v in past[i]]
-		toovisitedsmalls = {k for k, v in past[i] if k in smallcaves and v > 1}
-		if not any(toovisitedsmalls):
-			neighbors = Neighbors(present[i])
+
+		visited = {k:v for k, v in past[i] if k in smallcaves}
+		if not repeated[i]:
+			neighbors = neighborsDict[present[i]]
 		else:
-			neighbors = Neighbors(present[i]) - (set(visited).difference(bigcaves))
+			neighbors = neighborsDict[present[i]] - visited.keys()
+
 		for neigh in neighbors:
-			small = visited.count(neigh) + 1
-			future.update({
-				              (past[i] + ((neigh, small),)):neigh})
+			repeats = repeated[i]
+			count = visited.get(neigh, 0) + 1
+			if count > 1:
+				repeats = True
+			future.update(
+					{
+						((past[i] + ((neigh, count),)), repeats):neigh
+						}
+					)
 	return FindPaths2(future)
 
 
@@ -53,11 +73,14 @@ with open('day12.txt') as f:
 
 	bigcaves = {v for v in vertices if v.isupper()}
 	smallcaves = vertices - bigcaves - {'start', 'end'}
+	neighborsDict = {v:Neighbors(v) for v in vertices}
 
 	start = {
-		('start',):'start'}
+		('start',):'start'
+		}
 	print('Parte 1:', len(FindPaths(start)))
 
 	start2 = {
-		(('start', -1),):'start'}
+		((('start', -1),), False):'start'
+		}
 	print('Parte 2:', len(FindPaths2(start2)))
