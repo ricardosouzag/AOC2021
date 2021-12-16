@@ -21,7 +21,7 @@ def MinimizeCost(source, target, grid):
 	opens.put((H(source, target) + openset[source], source))
 
 	while opens:
-		h, node = opens.get()
+		node = opens.get()[1]
 		g = openset[node]
 
 		for neigh in GetNeighbors(node, points):
