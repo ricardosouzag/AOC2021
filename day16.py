@@ -2,11 +2,11 @@ def binToInt(bin):
 	return int(''.join(bin), 2)
 
 
-def GetPackets(code, amt=0, ignorePadding=False):
+def GetPackets(code, amt=0, ignorePadding=False, parentsname=''):
 	packets = []
 	data = code
 	while len(set(data)) > 1:
-		packet = Packet(data, ignorePadding)
+		packet = Packet(data, ignorePadding, name=str(len(packets)), parentsname=parentsname)
 		packets.append(packet)
 		data = packet.leftoverBits
 		if len(packets) == amt:
@@ -37,7 +37,7 @@ hex2bin = {
 class Packet:
 	_LTIdict = {0:15, 1:11}
 
-	def __init__(self, bits, ignorePadding=False):
+	def __init__(self, bits, ignorePadding=False, name = '', parentsname = ''):
 		self.bits = bits
 		self._ignorePadding = ignorePadding
 		self._padding = 0
@@ -45,6 +45,8 @@ class Packet:
 		self.type = binToInt(self.bits[3:6])
 		self._encodedBits = bits[6:]
 		self.subpackets = []
+		self.name = parentsname + '-' + name if parentsname != '' else name
+		print(self.name)
 		self.DecodeBits()
 		self.activeBits = self.bits[:self._currLen + self._padding]
 		self.leftoverBits = self.bits[self._currLen + self._padding:]
@@ -74,10 +76,11 @@ class Packet:
 				self._padding = self.LTIInst
 				self.subpackets = GetPackets(
 						self._encodedBits[self._LTIInstLen + 1:self.LTIInst + self._LTIInstLen + 1],
-						ignorePadding=True
+						ignorePadding=True,
+						parentsname=self.name
 						)[0]
 			else:
-				self.subpackets, leftover = GetPackets(self._encodedBits[self._LTIInstLen + 1:], self.LTIInst, True)
+				self.subpackets, leftover = GetPackets(self._encodedBits[self._LTIInstLen + 1:], self.LTIInst, True, parentsname=self.name)
 				self._padding = sum([packet.size for packet in self.subpackets]) + len(leftover)
 
 	def GetVersions(self):
