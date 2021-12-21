@@ -5,6 +5,22 @@ def binToInt(bin):
 	return int(''.join(bin), 2)
 
 
+def prod(arrlike):
+	return reduce(lambda a, b: a * b, arrlike)
+
+
+def greaterThan(arrlike):
+	return int(arrlike[0] > arrlike[1])
+
+
+def lessThan(arrlike):
+	return int(arrlike[0] < arrlike[1])
+
+
+def equals(arrlike):
+	return int(arrlike[0] == arrlike[1])
+
+
 def GetPackets(code, amt=0, ignorePadding=False, parentName=''):
 	packets = []
 	data = code
@@ -18,27 +34,37 @@ def GetPackets(code, amt=0, ignorePadding=False, parentName=''):
 
 
 hex2bin = {
-	'0':'0000',
-	'1':'0001',
-	'2':'0010',
-	'3':'0011',
-	'4':'0100',
-	'5':'0101',
-	'6':'0110',
-	'7':'0111',
-	'8':'1000',
-	'9':'1001',
-	'A':'1010',
-	'B':'1011',
-	'C':'1100',
-	'D':'1101',
-	'E':'1110',
-	'F':'1111'
-	}
+	'0': '0000',
+	'1': '0001',
+	'2': '0010',
+	'3': '0011',
+	'4': '0100',
+	'5': '0101',
+	'6': '0110',
+	'7': '0111',
+	'8': '1000',
+	'9': '1001',
+	'A': '1010',
+	'B': '1011',
+	'C': '1100',
+	'D': '1101',
+	'E': '1110',
+	'F': '1111'
+}
+
+instructions = {
+	0: sum,
+	1: prod,
+	2: min,
+	3: max,
+	5: greaterThan,
+	6: lessThan,
+	7: equals
+}
 
 
 class Packet:
-	_LTIdict = {0:15, 1:11}
+	_LTIdict = {0: 15, 1: 11}
 
 	def __init__(self, bits, ignorePadding=False, name='', parent=''):
 		self.bits = bits
@@ -75,14 +101,14 @@ class Packet:
 			if self.LTI == 0:
 				self._padding = self.LTIInst
 				self.subpackets = GetPackets(
-						self._encodedBits[self._LTIInstLen + 1:self.LTIInst + self._LTIInstLen + 1],
-						ignorePadding=True,
-						parentName=self.name
-						)[0]
+					self._encodedBits[self._LTIInstLen + 1:self.LTIInst + self._LTIInstLen + 1],
+					ignorePadding=True,
+					parentName=self.name
+				)[0]
 			else:
 				self.subpackets, leftover = GetPackets(
-						self._encodedBits[self._LTIInstLen + 1:], self.LTIInst, True, parentName=self.name
-						)
+					self._encodedBits[self._LTIInstLen + 1:], self.LTIInst, True, parentName=self.name
+				)
 				self._padding = sum([packet.size for packet in self.subpackets])
 
 	def GetVersions(self):
@@ -92,32 +118,18 @@ class Packet:
 
 
 def ParsePacket(packet):
-	value = 0
-	subpackets = packet.subpackets
-	subvalues = [ParsePacket(subpack) for subpack in subpackets]
 	if packet.type == 4:
 		value = packet.value
-	elif packet.type == 0:
-		value = sum(subvalues)
-	elif packet.type == 1:
-		value = reduce(lambda a, b:a * b, subvalues, 1)
-	elif packet.type == 2:
-		value = min(subvalues)
-	elif packet.type == 3:
-		value = max(subvalues)
-	elif packet.type == 5:
-		value = 1 if subvalues[0] > subvalues[1] else 0
-	elif packet.type == 6:
-		value = 0 if subvalues[0] >= subvalues[1] else 1
-	elif packet.type == 7:
-		value = 1 if subvalues[0] == subvalues[1] else 0
+	else:
+		subpackets = packet.subpackets
+		subvalues = [ParsePacket(subpack) for subpack in subpackets]
+		value = instructions[packet.type](subvalues)
 	return value
 
 
 with open('day16.txt') as f:
 	raw = f.read().splitlines()
 	raw = [list(e) for e in raw][0]
-	test1 = '9C0141080250320F1802104A08'
 	inputcode = ''.join([hex2bin[c] for c in raw])
 	packets = GetPackets(inputcode)[0]
 	print('Parte 1:', sum([pack.GetVersions() for pack in packets]))
