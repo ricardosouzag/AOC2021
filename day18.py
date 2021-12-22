@@ -25,7 +25,6 @@ class Snailfish:
 	def GetMagnitude(self):
 		return self._GetMagnitude(self.list)
 
-
 	def _GetMagnitude(self, arrlike):
 		if isinstance(arrlike[0], int):
 			val1 = arrlike[0]
@@ -117,12 +116,6 @@ class Snailfish:
 
 with open('day18.txt') as f:
 	raw = f.read().splitlines()
-
-	# test1 = '[[[[4,3],4],4],[7,[[8,4],9]]]'
-	# test2 = '[1,1]'
-	# print(test1)
-	# print(test2)
-	# snailtest = Add(Snailfish(test1), Snailfish(test2))
 	snailfeesh = [Snailfish(line) for line in raw]
 	part1 = reduce(Add, snailfeesh)
 	print('Parte 1:', part1.GetMagnitude())
@@ -136,6 +129,3 @@ with open('day18.txt') as f:
 			maxmag = max(maxmag, addsnail1, addsnail2)
 
 	print('Parte 2:', maxmag)
-
-
-
