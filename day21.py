@@ -1,11 +1,10 @@
 import itertools
-from collections import Counter
 from functools import reduce
 
 
 def DeterministicDice():
 	for i in itertools.count(1, 3):
-		yield [varmod(i - 1, 10), varmod(i, 10), varmod(i + 1, 10)]
+		yield [varmod(i , 10), varmod(i+1, 10), varmod(i + 2, 10)]
 
 
 def GetPosition(startpos, dice):
@@ -24,21 +23,25 @@ def varmod(num, base):
 	return ((num - 1) % base) + 1
 
 
-def Reach21(currvals):
+def QuantumDiracDice(currvals, goal):
 	newvals = {}
+
 	for stat, cnts in currvals.items():
 		pos, val = stat
-		if val > 20:
-			newvals[stat] = dictadd(newvals.get(stat,{}), cnts)
+
+		if val > goal - 1:
+			newvals[stat] = dictadd(newvals.get(stat, {}), cnts)
 			continue
+
 		for die, amt in quantumDice.items():
 			newpos = GetPosition(pos, die)
 			newval = val + newpos
 			newcnts = {k + 1: v * amt for k, v in cnts.items()}
 			newvals[(newpos, newval)] = dictadd(newvals.get((newpos, newval), {}), newcnts)
 
-	if [key[1] for key in newvals.keys() if key[1] < 21]:
-		return Reach21(newvals)
+	if [key for key in newvals.keys() if key[1] < goal]:
+		return QuantumDiracDice(newvals, goal)
+
 	return reduce(dictadd, newvals.values())
 
 
@@ -69,9 +72,11 @@ with open('day21.txt') as f:
 	quantumDice = [sum(die) for die in quantum]
 	quantumDice = {dice: quantumDice.count(dice) for dice in quantumDice}
 
-	quantum1, quantum2 = Reach21({(start[0], 0): {0: 1}}), Reach21({(start[1], 0): {0: 1}})
+	quantum1, quantum2 = QuantumDiracDice({(start[0], 0): {0: 1}}, 21), QuantumDiracDice({(start[1], 0): {0: 1}}, 21)
+	print(quantum1)
+	print(quantum2)
 
-	p1wins = sum([v1 * sum([v2 for k2,v2 in quantum2.items() if k1 <= k2]) for k1,v1 in quantum1.items()])
-	p2wins = sum([v1 * sum([v2 for k2,v2 in quantum2.items() if k1 > k2]) for k1,v1 in quantum1.items()])
+	p1wins = sum(v1 * sum(v2 for k2,v2 in quantum2.items() if k1 <= k2) for k1,v1 in quantum1.items())
+	p2wins = sum(v2 * sum(v1 for k1, v1 in quantum1.items() if k1 > k2) for k2, v2 in quantum2.items())
 
 	print(p1wins, p2wins, max(p1wins, p2wins))
