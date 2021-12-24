@@ -1,10 +1,10 @@
-import itertools
+from itertools import count, product, accumulate
 from functools import reduce
 
 
 def DeterministicDice():
-	for i in itertools.count(1, 3):
-		yield [varmod(i , 10), varmod(i+1, 10), varmod(i + 2, 10)]
+	for i in count(1, 3):
+		yield [varmod(i, 10), varmod(i + 1, 10), varmod(i + 2, 10)]
 
 
 def GetPosition(startpos, dice):
@@ -66,17 +66,22 @@ with open('day21.txt') as f:
 			if [v for k, v in player.items() if v[1] > 999]: break
 
 	loser = min([v[1] for k, v in player.items()])
-	print(3 * cnt * loser)
+	print('Parte 1:', 3 * cnt * loser)
 
-	quantum = list(itertools.product([1, 2, 3], repeat=3))
+	quantum = list(product([1, 2, 3], repeat=3))
 	quantumDice = [sum(die) for die in quantum]
 	quantumDice = {dice: quantumDice.count(dice) for dice in quantumDice}
 
-	quantum1, quantum2 = QuantumDiracDice({(start[0], 0): {0: 1}}, 21), QuantumDiracDice({(start[1], 0): {0: 1}}, 21)
-	print(quantum1)
-	print(quantum2)
+	quantum1 = QuantumDiracDice({(start[0], 0): {0: 1}}, 21)
+	quantum2 = QuantumDiracDice({(start[1], 0): {0: 1}}, 21)
 
-	p1wins = sum(v1 * sum(v2 for k2,v2 in quantum2.items() if k1 <= k2) for k1,v1 in quantum1.items())
-	p2wins = sum(v2 * sum(v1 for k1, v1 in quantum1.items() if k1 > k2) for k2, v2 in quantum2.items())
+	p1list = [quantum1.get(i, 0) for i in range(1, max(quantum1.keys()) + 1)]
+	p2list = [quantum2.get(i, 0) for i in range(1, max(quantum2.keys()) + 1)]
 
-	print(p1wins, p2wins, max(p1wins, p2wins))
+	p1leftovers = list(accumulate(p1list, lambda a, b: 27 * a - b, initial=1))[1:]
+	p2leftovers = list(accumulate(p2list, lambda a, b: 27 * a - b, initial=1))[1:]
+
+	p1wins = [p1list[i] if i == 0 else p1list[i] * p2leftovers[i - 1] for i in range(len(p1list))]
+	p2wins = [p2list[i] * p1leftovers[i] for i in range(len(p2list))]
+
+	print('Parte 2:', max(sum(p1wins), sum(p2wins)))
