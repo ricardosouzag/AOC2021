@@ -1,25 +1,108 @@
 from collections import Counter
 from itertools import combinations
+from numpy import array
+
+rotations = [
+    ((0, 1, 0), (0, 0, 1)),
+    ((1, 0, 0), (0, 0, 1)),
+    ((0, -1, 0), (0, 0, 1)),
+    ((-1, 0, 0), (0, 0, 1)),
+    ((0, 1, 0), (0, 0, -1)),
+    ((1, 0, 0), (0, 0, -1)),
+    ((0, -1, 0), (0, 0, -1)),
+    ((-1, 0, 0), (0, 0, -1)),
+
+    ((0, 1, 0), (1, 0, 0)),
+    ((0, 0, 1), (1, 0, 0)),
+    ((0, -1, 0), (1, 0, 0)),
+    ((0, 0, -1), (1, 0, 0)),
+    ((0, 1, 0), (-1, 0, 0)),
+    ((0, 0, 1), (-1, 0, 0)),
+    ((0, -1, 0), (-1, 0, 0)),
+    ((0, 0, -1), (-1, 0, 0)),
+
+    ((1, 0, 0), (0, 1, 0)),
+    ((0, 0, 1), (0, 1, 0)),
+    ((-1, 0, 0), (0, 1, 0)),
+    ((0, 0, -1), (0, 1, 0)),
+    ((1, 0, 0), (0, -1, 0)),
+    ((0, 0, 1), (0, -1, 0)),
+    ((-1, 0, 0), (0, -1, 0)),
+    ((0, 0, -1), (0, -1, 0)),
+]
+
+
+def rotate(vec):
+    x, y, z = vec
+    return {
+        ((0, 1, 0), (0, 0, 1)): (x, y, z),
+        ((1, 0, 0), (0, 0, 1)): (-y, x, z),
+        ((0, -1, 0), (0, 0, 1)): (-x, -y, z),
+        ((-1, 0, 0), (0, 0, 1)): (y, -x, z),
+        ((0, 1, 0), (0, 0, -1)): (-x, y, -z),
+        ((1, 0, 0), (0, 0, -1)): (y, x, -z),
+        ((0, -1, 0), (0, 0, -1)): (x, -y, -z),
+        ((-1, 0, 0), (0, 0, -1)): (-y, -x, -z),
+
+        ((0, 1, 0), (1, 0, 0)): (-z, y, x),
+        ((0, 0, 1), (1, 0, 0)): (y, z, x),
+        ((0, -1, 0), (1, 0, 0)): (z, -y, x),
+        ((0, 0, -1), (1, 0, 0)): (-y, -z, x),
+        ((0, 1, 0), (-1, 0, 0)): (z, y, -x),
+        ((0, 0, 1), (-1, 0, 0)): (-y, z, -x),
+        ((0, -1, 0), (-1, 0, 0)): (-z, -y, -x),
+        ((0, 0, -1), (-1, 0, 0)): (y, -z, -x),
+
+        ((1, 0, 0), (0, 1, 0)): (z, x, y),
+        ((0, 0, 1), (0, 1, 0)): (-x, z, y),
+        ((-1, 0, 0), (0, 1, 0)): (-z, -x, y),
+        ((0, 0, -1), (0, 1, 0)): (x, -z, y),
+        ((1, 0, 0), (0, -1, 0)): (-z, x, -y),
+        ((0, 0, 1), (0, -1, 0)): (x, z, -y),
+        ((-1, 0, 0), (0, -1, 0)): (z, -x, -y),
+        ((0, 0, -1), (0, -1, 0)): (-x, -z, -y),
+    }
+
+
+def checkOverlap(scan1, scan2):
+    if scan1 == scan2:
+        return True, scan1
+    rotscan2 = [[rotate(b2)[dir] for b2 in scan2] for dir in rotations]
+    for b1 in scan1:
+        vec1 = array(b1)
+        for rscan2 in rotscan2:
+            for rb2 in rscan2:
+                vec2 = array(rb2)
+                vecdiff = vec2 - vec1
+                translatedrscan2 = {tuple(array(rbeac2) - vecdiff) for rbeac2 in rscan2}
+                if len(translatedrscan2 & scan1) > 11:
+                    return True, translatedrscan2, len(translatedrscan2 & scan1), -vecdiff
+    return False, ''
+
+
+def findBeacons():
+    scannerstack = [(0, scanners[0])]
+    seen = set()
+    realbeacons = set()
+    realscanners = [array((0,0,0)) for _ in range(size)]
+    while scannerstack:
+        idx, scanner = scannerstack.pop()
+        seen |= {idx}
+        realbeacons |= scanner
+        scancovers = {list(cover - {idx})[0] for cover in covers if idx in cover and len(cover & seen) < 2}
+        overlaps = {i: checkOverlap(scanner, scanners[i]) for i in scancovers}
+        for i in scancovers:
+            if overlaps[i][0]:
+                realscanners[i] = overlaps[i][3]
+        overlaps = [(i, overlaps[i][1]) for i in scancovers if overlaps[i][0]]
+        scannerstack += overlaps
+    return realbeacons, realscanners
 
 
 def l1(v1, v2):
     x1, y1, z1 = v1
     x2, y2, z2 = v2
     return abs(x1 - x2) + abs(y1 - y2) + abs(z1 - z2)
-
-
-def getcopies(v):
-    seen = frozenset({v})
-    copies = [v]
-    while copies:
-        copii = copies.pop()
-        seen |= frozenset({copii})
-        for i, j in beaconpairs:
-            if copii in beaconpairs[i, j]:
-                newcopy = beaconpairs[i, j][copii]
-                if not newcopy in seen:
-                    copies += [newcopy]
-    return seen
 
 
 with open('day19.txt') as f:
@@ -31,13 +114,13 @@ with open('day19.txt') as f:
         line = raw[i]
         if 'scanner' in line:
             start = True
-            scanners.append([])
+            scanners.append(set())
         elif line == '':
             start = False
             j += 1
         elif start:
             beac = tuple(map(int, line.split(',')))
-            scanners[j].append(beac)
+            scanners[j].add(beac)
 
     totalvertices = sum(len(beacon) for beacon in scanners)
 
@@ -78,33 +161,13 @@ with open('day19.txt') as f:
                            [{k: v for k, v in vertices[i, j][1].items() if v > 10}]
                        for i, j in combinations(range(size), 2)}
 
-    overlappedbeacons = {(i, j): len(overlapvertices[i, j][0]) for i, j in combinations(range(size), 2)}
+    overlappedbeacons = {(i, j): min(len(overlapvertices[i, j][0]), len(overlapvertices[i, j][1])) for i, j in
+                         combinations(range(size), 2)}
 
-    covers = [pair for pair in combinations(range(size), 2) if overlappedbeacons[pair] > 11]
+    covers = [set(pair) for pair in combinations(range(size), 2) if overlappedbeacons[pair] > 11]
 
-    overlapedges = {(i, j):
-                        [{edge for edge in edgeslist[i] if set(edge) <= overlapvertices[i, j][0].keys()}] +
-                        [{edge for edge in edgeslist[j] if set(edge) <= overlapvertices[i, j][1].keys()}]
-                    for i, j in combinations(range(size), 2)}
+    realbeacons, realscanners = findBeacons()
+    print('Parte 1:', len(realbeacons))
 
-    beaconpairing = {(i, j):
-                         [{beacon: Counter([l1(*e) for e in overlapedges[i, j][0] if beacon in e]) for beacon in
-                           overlapvertices[i, j][0]}] +
-                         [{beacon: Counter([l1(*e) for e in overlapedges[i, j][1] if beacon in e]) for beacon in
-                           overlapvertices[i, j][1]}]
-                     for i, j in combinations(range(size), 2)}
-
-    beaconpairs = {}
-    for i, j in covers:
-        for v1 in beaconpairing[i, j][0]:
-            v1fingerprint = beaconpairing[i, j][0][v1]
-            for v2 in beaconpairing[i, j][1]:
-                v2fingerprint = beaconpairing[i, j][1][v2]
-                if v1fingerprint == v2fingerprint:
-                    beaconpairs[i, j] = beaconpairs.get((i, j), {}) | {v1: v2, v2: v1}
-                    break
-
-    copieslist = set(sum([[getcopies(vertex) for vertex in scanner] for scanner in scanners], []))
-    print(len(copieslist))
-
-    print(totalvertices)
+    realdistances = [l1(*edge) for edge in combinations(realscanners, 2)]
+    print('Parte 2:', max(realdistances))
