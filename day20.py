@@ -1,7 +1,8 @@
 from functools import reduce
 from itertools import product
-
 from numpy import zeros
+
+pixel = {'#': 1, '.': 0}
 
 
 def neighbors(coord):
@@ -13,27 +14,28 @@ def neighbors(coord):
     return ret
 
 
-def getOutput(coord, mat):
+def getOutput(coord, mat, parity):
     x, y = mat.shape
     wincoords = neighbors(coord)
     window = []
     for wincoord in wincoords:
         row, col = wincoord
         if row < 0 or row >= x or col < 0 or col >= y:
-            window += [0]
+            window += [parity]
         else:
             window += [mat[row, col]]
     instruction = int(reduce(lambda x, y: x + str(y), window, ''), 2)
-    return 1 if algorithm[instruction] == '#' else 0
+    return pixel[algorithm[instruction]]
 
 
-def enhance(mat):
+def enhance(mat, parity=0):
     x, y = mat.shape
+    outparity = pixel[algorithm[0] if parity == 0 else algorithm[-1]]
     output = zeros((x + 2, y + 2), dtype=int)
     outcoords = product(range(x + 2), range(y + 2))
     for i, j in outcoords:
-        output[i, j] = getOutput((i - 1, j - 1), mat)
-    return output
+        output[i, j] = getOutput((i - 1, j - 1), mat, parity)
+    return output, outparity
 
 
 with open('day20.txt') as f:
@@ -45,6 +47,12 @@ with open('day20.txt') as f:
     rows, cols = imagemat.shape
     coords = product(range(rows), range(cols))
     for i, j in coords:
-        imagemat[i, j] = 1 if image[i][j] == '#' else 0
+        imagemat[i, j] = pixel[image[i][j]]
 
-    print(len(enhance(enhance(imagemat)).nonzero()))
+    pair = 0
+    for i in range(50):
+        imagemat, pair = enhance(imagemat, pair)
+        if i == 1:
+            print('Parte 1:', len(imagemat.nonzero()[0]))
+
+    print('Parte 2:', len(imagemat.nonzero()[0]))

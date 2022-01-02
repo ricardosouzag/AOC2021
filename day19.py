@@ -84,7 +84,7 @@ def findBeacons():
     scannerstack = [(0, scanners[0])]
     seen = set()
     realbeacons = set()
-    realscanners = [array((0,0,0)) for _ in range(size)]
+    realscanners = [array((0, 0, 0)) for _ in range(size)]
     while scannerstack:
         idx, scanner = scannerstack.pop()
         seen |= {idx}
